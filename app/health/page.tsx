@@ -2,16 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Heart,
-  Plus,
-  Timer,
-  X,
-  Check,
-  Minus,
-} from "lucide-react";
+import { Heart, Plus, Timer, X, Minus } from "lucide-react";
 
-import { useDailyStore } from "@/store/useDailyStore";
+import { useDailyStore } from "@/stores/useDailyStore";
 
 export default function HealthPage() {
   const {
@@ -19,14 +12,6 @@ export default function HealthPage() {
     addExercise,
     removeExercise,
     toggleExerciseSet,
-    getExercisePercentage,
-    trackers,
-    incrementTracker,
-    decrementTracker,
-    startTimer,
-    stopTimer,
-    timerSeconds,
-    isTimerRunning,
     showHistory,
     toggleHistory,
     history,
@@ -38,16 +23,14 @@ export default function HealthPage() {
     name: "",
     sets: 3,
     reps: 10,
-    category: "push" as const,
   });
 
-  // ADD EXERCISE
   const handleAdd = () => {
     if (!form.name.trim()) return;
 
     addExercise(form.name, form.sets, form.reps);
 
-    setForm({ name: "", sets: 3, reps: 10, category: "push" });
+    setForm({ name: "", sets: 3, reps: 10 });
     setShowAdd(false);
   };
 
@@ -57,43 +40,17 @@ export default function HealthPage() {
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Heart /> Health & Fitness
+          <Heart /> Health
         </h1>
-
-        <button
-          onClick={() => (isTimerRunning ? stopTimer() : startTimer())}
-          className="bg-red-500 px-4 py-2 rounded-xl"
-        >
-          <Timer className="inline mr-2" />
-          {isTimerRunning ? "Stop" : "Start"} ({timerSeconds}s)
-        </button>
-      </div>
-
-      {/* TRACKERS */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
-        {trackers.map((t) => (
-          <div key={t.id} className="bg-white/10 p-3 rounded-xl">
-            <p className="text-sm">{t.label}</p>
-            <div className="flex items-center justify-between mt-2">
-              <button onClick={() => decrementTracker(t.id)}>
-                <Minus />
-              </button>
-              <span>
-                {t.value}/{t.goal}
-              </span>
-              <button onClick={() => incrementTracker(t.id)}>
-                <Plus />
-              </button>
-            </div>
-          </div>
-        ))}
       </div>
 
       {/* EXERCISES */}
       <div className="space-y-4">
         {exercises.map((ex) => {
-          const totalSets = ex.sets.length;
-          const completedSets = ex.sets.filter((s) => s.completed).length;
+          const totalSets = ex?.sets?.length ?? 0;
+
+          const completedSets =
+            ex?.sets?.filter((s) => s?.completed).length ?? 0;
 
           const percent =
             totalSets === 0
@@ -104,10 +61,13 @@ export default function HealthPage() {
             <div key={ex.id} className="bg-white/10 p-4 rounded-xl">
 
               {/* HEADER */}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <h2 className="font-bold">{ex.name}</h2>
 
-                <button onClick={() => removeExercise(ex.id)}>
+                <button
+                  onClick={() => removeExercise(ex.id)}
+                  className="text-red-400"
+                >
                   <X />
                 </button>
               </div>
@@ -127,7 +87,7 @@ export default function HealthPage() {
                 ))}
               </div>
 
-              {/* PROGRESS */}
+              {/* PROGRESS BAR */}
               <div className="mt-3 h-2 bg-white/10 rounded-full">
                 <div
                   className="h-full bg-green-500 rounded-full"
@@ -200,15 +160,13 @@ export default function HealthPage() {
           onClick={toggleHistory}
           className="bg-gray-700 px-4 py-2 rounded"
         >
-          View History
+          Toggle History
         </button>
 
         {showHistory && (
           <div className="mt-3 bg-white/10 p-4 rounded-xl">
-            <h2 className="font-bold mb-2">History</h2>
-
             {history.length === 0 ? (
-              <p className="text-gray-400">No workouts yet</p>
+              <p className="text-gray-400">No history yet</p>
             ) : (
               history.map((h, i) => (
                 <div key={i} className="text-sm mb-2">
